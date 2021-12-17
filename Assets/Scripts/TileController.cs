@@ -16,6 +16,7 @@ public class TileController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = FindObjectOfType<GameManager>();
         if (storedTilesParent.childCount > 0)
         {
             for (int i = 0; i < storedTilesParent.childCount; i++)
@@ -24,7 +25,6 @@ public class TileController : MonoBehaviour
             }
         }
         CreateFirstMap();
-        gameManager = FindObjectOfType<GameManager>();
     }
 
     // Update is called once per frame
@@ -65,10 +65,10 @@ public class TileController : MonoBehaviour
     void AddNewTile()
     {
         Transform tileT = storedTilesParent.GetChild(Random.Range(0, storedTilesParent.childCount));
-        Vector3 pos = activeTilesParent.GetChild(activeTilesParent.childCount-1).position + new Vector3(0, 0, -2.5f);
-        Debug.Log("last child", activeTilesParent.GetChild(activeTilesParent.childCount-1).gameObject);
+        Vector3 pos = activeTilesParent.GetChild(activeTilesParent.childCount - 1).position + new Vector3(0, 0, -2.5f);
+        //Debug.Log("last child", activeTilesParent.GetChild(activeTilesParent.childCount - 1).gameObject);
         tileT.SetParent(activeTilesParent);
-        print(pos);
+        //print(pos);
         tileT.position = pos;
         tileT.gameObject.SetActive(true);
     }
