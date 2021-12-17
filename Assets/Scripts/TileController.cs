@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class TileController : MonoBehaviour
 {
+    public Vector3 tileSize;
     [SerializeField]
     Transform tileStartT, tileEndT;
     [SerializeField]
@@ -65,7 +66,7 @@ public class TileController : MonoBehaviour
     void AddNewTile()
     {
         Transform tileT = storedTilesParent.GetChild(Random.Range(0, storedTilesParent.childCount));
-        Vector3 pos = activeTilesParent.GetChild(activeTilesParent.childCount - 1).position + new Vector3(0, 0, -2.5f);
+        Vector3 pos = activeTilesParent.GetChild(activeTilesParent.childCount - 1).position - new Vector3(0, 0, tileSize.z);
         //Debug.Log("last child", activeTilesParent.GetChild(activeTilesParent.childCount - 1).gameObject);
         tileT.SetParent(activeTilesParent);
         //print(pos);
@@ -75,12 +76,12 @@ public class TileController : MonoBehaviour
 
     void CreateFirstMap()
     {
-        int tilesToPlace = Mathf.RoundToInt((Mathf.Abs(tileEndT.position.z) + Mathf.Abs(tileStartT.position.z)) / 2.5f) + 1;
+        int tilesToPlace = Mathf.RoundToInt((Mathf.Abs(tileEndT.position.z) + Mathf.Abs(tileStartT.position.z)) / tileSize.z) + 1;
         for (int i = 0; i < tilesToPlace; i++)
         {
             Transform tileT = storedTilesParent.GetChild(Random.Range(0, storedTilesParent.childCount));
             tileT.SetParent(activeTilesParent);
-            tileT.position = tileStartT.position + new Vector3(0, 0, i * -2.5f);
+            tileT.position = tileStartT.position - new Vector3(0, 0, i * tileSize.z);
             tileT.gameObject.SetActive(true);
         }
     }

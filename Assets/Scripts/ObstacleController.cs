@@ -10,6 +10,8 @@ public class ObstacleController : MonoBehaviour
     float nearDist = 0.3f;
     [SerializeField]
     Transform activeobstaclesParent, storedobstaclesParent;
+    [SerializeField]
+    LayerMask groundLayers;
 
     TileController tileController;
     [SerializeField]
@@ -45,8 +47,14 @@ public class ObstacleController : MonoBehaviour
         newObstacleDelay += gameManager.playerSpeed.z * Time.deltaTime;
         if (newObstacleDelay > gameManager.obstacleDelay)
         {
-            newObstacleDelay = 0;
-            AddNewObstacle();
+            if (AddNewObstacle())
+            {
+                newObstacleDelay = 0;
+            }
+            else
+            {
+                newObstacleDelay = gameManager.obstacleDelay * 0.99f;
+            }
         }
     }
 
@@ -97,49 +105,32 @@ public class ObstacleController : MonoBehaviour
         }
     }
 
-    void AddNewObstacle()
+    bool AddNewObstacle()
     {
         if (storedobstaclesParent.childCount == 0)
         {
-            return;
+            return false;
         }
         Transform obstacleT = storedobstaclesParent.GetChild(Random.Range(0, storedobstaclesParent.childCount));
         bool isValid = false;
         Transform lastTile = activeTilesT.GetChild(activeTilesT.childCount - 1);
-        Tile tile = lastTile.GetComponent<Tile>();
-        float xpos = 1.25f;
-        if (tile)
+        Ray ray = new Ray(lastTile.position + Vector3.up * 100, Vector3.down);
+        if (Physics.Raycast(ray, out RaycastHit hit, 200, groundLayers))
         {
-            if (obstacleT.CompareTag("Door"))
+            if (hit.point.y > -0.4f && hit.point.y < 0.4f)
             {
-                if (tile.canTakeDoor)
-                {
-                    isValid = true;
-                }
-            }
-            else if (obstacleT.CompareTag("NPC"))
-            {
-                xpos = Random.Range(0.3f, 2.2f);
-                if (tile.canTakeNPC)
-                {
-                    isValid = true;
-                }
-            }
-            if (!isValid)
-            {
-                return;
+                isValid = true;
             }
         }
-        Vector3 pos = lastTile.position + new Vector3(xpos, 0, 1.25f);
+        if (!isValid)
+        {
+            return false;
+        }
+        Vector3 pos = lastTile.position + new Vector3(0, 0, 0);
         //Debug.Log("last child", activeobstaclesParent.GetChild(activeobstaclesParent.childCount - 1).gameObject);
         obstacleT.SetParent(activeobstaclesParent);
-        //print(pos);
-        Ray ray = new Ray(pos + Vector3.up * 100, Vector3.down);
-        if (Physics.Raycast(ray, out RaycastHit hit, 101))
-        {
-            pos = hit.point;
-        }
         obstacleT.position = pos;
         obstacleT.gameObject.SetActive(true);
+        return true;
     }
 }

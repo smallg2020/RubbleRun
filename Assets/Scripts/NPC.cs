@@ -37,7 +37,11 @@ public class NPC : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Hit(collision.GetContact(0).point);
+        //print("NPC hit by " + collision.collider.attachedRigidbody.tag);
+        if (collision.collider.attachedRigidbody.CompareTag("Player"))
+        {
+            Hit(collision.GetContact(0).point);
+        }
     }
 
     public void Hit(Vector3 pos)
