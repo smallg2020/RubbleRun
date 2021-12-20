@@ -7,15 +7,11 @@ public class ObstacleController : MonoBehaviour
     [SerializeField]
     Transform obstacleStartT, obstacleEndT;
     [SerializeField]
-    float nearDist = 0.3f;
-    [SerializeField]
-    Transform activeobstaclesParent, storedobstaclesParent;
+    Transform activeobstaclesParent;
     [SerializeField]
     LayerMask groundLayers;
-
-    TileController tileController;
     [SerializeField]
-    Transform activeTilesT;
+    GameObject[] obstaclePrefabs;
 
     GameManager gameManager;
     float newObstacleDelay = 0;
@@ -24,14 +20,6 @@ public class ObstacleController : MonoBehaviour
     void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
-        if (storedobstaclesParent.childCount > 0)
-        {
-            for (int i = 0; i < storedobstaclesParent.childCount; i++)
-            {
-                storedobstaclesParent.GetChild(i).gameObject.SetActive(false);
-            }
-        }
-        tileController = FindObjectOfType<TileController>();
     }
 
     // Update is called once per frame
@@ -53,7 +41,7 @@ public class ObstacleController : MonoBehaviour
             }
             else
             {
-                newObstacleDelay = gameManager.obstacleDelay * 0.99f;
+                newObstacleDelay *= 0.95f;
             }
         }
     }
@@ -67,9 +55,9 @@ public class ObstacleController : MonoBehaviour
         for (int i = 0; i < activeobstaclesParent.childCount; i++)
         {
             Transform obstacleT = activeobstaclesParent.GetChild(i);
-            if (Vector3.Distance(obstacleT.position, obstacleStartT.position) < nearDist)
+            if (obstacleT.position.z >= obstacleEndT.position.z)
             {
-                RemoveObstacle(obstacleT);
+                Destroy(obstacleT.gameObject);
             }
         }
     }
@@ -87,38 +75,16 @@ public class ObstacleController : MonoBehaviour
         }
     }
 
-    void RemoveObstacle(Transform t)
-    {
-        if (t.TryGetComponent<FragmentsController>(out FragmentsController fragmentsController))
-        {
-            fragmentsController.ResetFragments();
-        }
-        else
-        {
-            if (t.TryGetComponent<NPC>(out NPC npc))
-            {
-                npc.enabled = true;
-                npc.ResetNPC();
-            }
-            t.SetParent(storedobstaclesParent);
-            t.gameObject.SetActive(false);
-        }
-    }
-
     bool AddNewObstacle()
     {
-        if (storedobstaclesParent.childCount == 0)
-        {
-            return false;
-        }
-        Transform obstacleT = storedobstaclesParent.GetChild(Random.Range(0, storedobstaclesParent.childCount));
         bool isValid = false;
-        Transform lastTile = activeTilesT.GetChild(activeTilesT.childCount - 1);
-        Ray ray = new Ray(lastTile.position + Vector3.up * 100, Vector3.down);
+        Vector3 pos = obstacleStartT.position;
+        Ray ray = new Ray(pos + Vector3.up * 100, Vector3.down);
         if (Physics.Raycast(ray, out RaycastHit hit, 200, groundLayers))
         {
             if (hit.point.y > -0.4f && hit.point.y < 0.4f)
             {
+                pos = hit.point;
                 isValid = true;
             }
         }
@@ -126,11 +92,9 @@ public class ObstacleController : MonoBehaviour
         {
             return false;
         }
-        Vector3 pos = lastTile.position + new Vector3(0, 0, 0);
-        //Debug.Log("last child", activeobstaclesParent.GetChild(activeobstaclesParent.childCount - 1).gameObject);
-        obstacleT.SetParent(activeobstaclesParent);
-        obstacleT.position = pos;
-        obstacleT.gameObject.SetActive(true);
+        int id = Random.Range(0, obstaclePrefabs.Length);
+        GameObject obstacle = Instantiate(obstaclePrefabs[id], activeobstaclesParent);
+        obstacle.transform.position = pos;
         return true;
     }
 }

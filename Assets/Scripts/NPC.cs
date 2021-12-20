@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class NPC : MonoBehaviour
 {
-    [SerializeField]
-    int damage = 1;
-
     Animator anim;
     CapsuleCollider col;
     GameManager gameManager;
@@ -60,7 +57,6 @@ public class NPC : MonoBehaviour
             hitRecently = true;
             anim.enabled = false;
             col.isTrigger = true;
-            gameManager.health -= damage;
             yield return null;
             for (int i = 0; i < ragdollRBs.Length; i++)
             {

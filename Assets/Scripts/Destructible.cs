@@ -5,42 +5,44 @@ using UnityEngine;
 public class Destructible : MonoBehaviour
 {
     [SerializeField]
-    int damage = 1;
+    GameObject[] disableOnHit, enableOnHit;
 
-    Transform oldParent;
     GameManager gameManager;
+    PlayerController playerController;
 
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
-        oldParent = transform.parent;
+        playerController = FindObjectOfType<PlayerController>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnCollisionEnter(Collision collision)
     {
-
+        if (collision.GetContact(0).otherCollider.attachedRigidbody.CompareTag("Player"))
+        {
+            HitPlayer();
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.attachedRigidbody.CompareTag("Player"))
         {
-            gameManager.health -= damage;
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                Transform t = transform.GetChild(i);
-                t.gameObject.SetActive(true);
-                if (t.TryGetComponent<FragmentsController>(out FragmentsController fragmentsController))
-                {
-                    fragmentsController.SetUp();
-                }
-                transform.GetChild(i).SetParent(transform.parent);
-            }
-            transform.SetParent(oldParent);
-            transform.gameObject.SetActive(false);
+            HitPlayer();
         }
+    }
+
+    private void HitPlayer()
+    {
+        foreach (var g in enableOnHit)
+        {
+            g.SetActive(true);
+        }
+        foreach (var g in disableOnHit)
+        {
+            g.SetActive(false);
+        }
+        playerController.AddAttachment(-1);
+        Destroy(this);
     }
 }

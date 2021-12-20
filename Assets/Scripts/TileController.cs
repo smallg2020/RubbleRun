@@ -8,8 +8,6 @@ public class TileController : MonoBehaviour
     [SerializeField]
     Transform tileStartT, tileEndT;
     [SerializeField]
-    float nearDist = 0.3f;
-    [SerializeField]
     Transform activeTilesParent, storedTilesParent;
 
     GameManager gameManager;
@@ -40,7 +38,7 @@ public class TileController : MonoBehaviour
         for (int i = 0; i < activeTilesParent.childCount; i++)
         {
             Transform tileT = activeTilesParent.GetChild(i);
-            if (Vector3.Distance(tileT.position, tileStartT.position) < nearDist)
+            if (tileT.position.z >= tileEndT.position.z)
             {
                 RemoveTile(tileT);
                 AddNewTile();
@@ -81,7 +79,7 @@ public class TileController : MonoBehaviour
         {
             Transform tileT = storedTilesParent.GetChild(Random.Range(0, storedTilesParent.childCount));
             tileT.SetParent(activeTilesParent);
-            tileT.position = tileStartT.position - new Vector3(0, 0, i * tileSize.z);
+            tileT.position = tileEndT.position - new Vector3(0, 0, i * tileSize.z);
             tileT.gameObject.SetActive(true);
         }
     }

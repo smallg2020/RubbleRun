@@ -18,6 +18,8 @@ public class PlayerController : MonoBehaviour
     Transform fragmentsParent;
     [SerializeField]
     Transform[] fragmentTs;
+    [SerializeField]
+    GameObject[] attachmentGOs;
     Fragment[] fragments;
     Vector3[] startPositions;
     Quaternion[] startRotations;
@@ -147,6 +149,10 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator RestoringPlayer()
     {
+        for (int i = 0; i < attachmentGOs.Length; i++)
+        {
+            attachmentGOs[i].SetActive(false);
+        }
         transform.localScale = Vector3.one;
         transform.position = startPosition;
         transform.rotation = startRotation;
@@ -177,6 +183,19 @@ public class PlayerController : MonoBehaviour
         gameManager.health = gameManager.maxHealth;
         gameManager.lives--;
         health = gameManager.health;
+    }
+
+    public void AddAttachment(int v = -1)
+    {
+        int id = 0;
+        if (v == -1)
+        {
+            id = Random.Range(0, attachmentGOs.Length);
+        }
+        if (!attachmentGOs[id].activeSelf)
+        {
+            attachmentGOs[id].SetActive(true);
+        }
     }
 
 }
