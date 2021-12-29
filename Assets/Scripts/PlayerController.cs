@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public bool useTilt = false;
     public float jumpAccel = 0.1f;
     public float groundDist = 0.1f;
     public LayerMask groundLayers;
@@ -12,6 +13,8 @@ public class PlayerController : MonoBehaviour
     Vector3 moveVector;
     GameManager gameManager;
     bool jumped = false;
+    bool landed = false;
+    bool onGround = false;
     Vector3 startPosition;
     Quaternion startRotation;
     [SerializeField]
@@ -26,7 +29,15 @@ public class PlayerController : MonoBehaviour
     Vector3[] startScales;
     [SerializeField]
     int health;
+    [SerializeField]
+    Transform visualT;
 
+    [SerializeField]
+    Material snowballMat;
+    [SerializeField]
+    Color32 normalSnowballMatColor, invincibleSnowballMatColor;
+
+    float oldDir = 0;
     // Start is called before the first frame update
     void Start()
     {
@@ -45,6 +56,7 @@ public class PlayerController : MonoBehaviour
             fragments[i] = fragmentTs[i].GetComponent<Fragment>();
         }
         health = gameManager.health;
+        //print("device = " + SystemInfo.deviceType);
     }
 
     // Update is called once per frame
@@ -60,7 +72,7 @@ public class PlayerController : MonoBehaviour
             float percLost = health - gameManager.health;
             percLost = percLost / gameManager.maxHealth;
             //print("perc lost = " + percLost);
-            int piecesToBreak = Mathf.CeilToInt(fragmentTs.Length * percLost) - 1;
+            int piecesToBreak = Mathf.CeilToInt(fragmentTs.Length * percLost);
             //print("broke off " + piecesToBreak + " pieces");
             while (piecesToBreak > 0)
             {
@@ -94,22 +106,45 @@ public class PlayerController : MonoBehaviour
                 gameManager.Die();
             }
         }
-        if (Input.GetKey(KeyCode.A))
+        if (SystemInfo.deviceType == DeviceType.Desktop)
         {
-            moveVector.x = gameManager.playerSpeed.x * 1;
+            if (Input.GetKey(KeyCode.A))
+            {
+                moveVector.x = gameManager.playerSpeed.x * 1;
+            }
+            else if (Input.GetKey(KeyCode.D))
+            {
+                moveVector.x = gameManager.playerSpeed.x * -1;
+            }
+            else
+            {
+                moveVector.x *= 0.8f;
+            }
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                Jump();
+            }
         }
-        else if (Input.GetKey(KeyCode.D))
+        if (useTilt)
         {
-            moveVector.x = gameManager.playerSpeed.x * -1;
+            float inp = Input.acceleration.x;
+            moveVector.x = inp * -gameManager.playerSpeed.x * 3;
         }
         else
         {
-            moveVector.x *= 0.8f;
+            float inp = SimpleInput.GetAxis("Horizontal");
+            if (inp < -0.1f)
+            {
+                inp = -1;
+            }
+            else if (inp > 0.1f)
+            {
+                inp = 1;
+            }
+            moveVector.x = inp * -gameManager.playerSpeed.x;
         }
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Jump();
-        }
+
+        onGround = CheckGround();
 
     }
 
@@ -123,6 +158,34 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void Invincible()
+    {
+        //print("started invinciblity effect");
+        StartCoroutine(IsInvincible());
+    }
+
+    IEnumerator IsInvincible()
+    {
+        bool swapped = false;
+        //print(gameManager.invincible);
+        while (gameManager.invincible)
+        {
+            //print(swapped);
+            if (!swapped)
+            {
+                snowballMat.color = invincibleSnowballMatColor;
+                swapped = true;
+            }
+            else
+            {
+                snowballMat.color = normalSnowballMatColor;
+                swapped = false;
+            }
+            yield return new WaitForSeconds(gameManager.invincibilityTime * 0.1f);
+        }
+        snowballMat.color = normalSnowballMatColor;
+    }
+
     private void FixedUpdate()
     {
         //print("moveVector = " + moveVector);
@@ -131,6 +194,7 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Vector3.up * moveVector.y, ForceMode.Impulse);
             moveVector.y = 0;
             jumped = false;
+            StartCoroutine(Land());
         }
         rb.AddForce(moveVector, ForceMode.Force);
         Vector3 angVelo = rb.angularVelocity;
@@ -139,6 +203,49 @@ public class PlayerController : MonoBehaviour
         if (transform.localScale.sqrMagnitude < 30)
         {
             transform.localScale *= 1 + gameManager.sizeIncreaseOverDistance;
+        }
+    }
+
+    bool CheckGround()
+    {
+        bool onground = true;
+        Ray ray = new Ray(transform.position, Vector3.down);
+        if (!Physics.Raycast(ray, groundDist * transform.localScale.y * 1f, groundLayers))
+        {
+            onground = false;
+        }
+        return onground;
+    }
+
+    IEnumerator Land()
+    {
+        while (onGround)
+        {
+            yield return null;
+        }
+        while (!onGround)
+        {
+            yield return null;
+        }
+        yield return new WaitForSeconds(0.1f);
+        float mod = 0.05f;
+        Vector3 nScale = visualT.localScale;
+        for (int d = 0; d < 2; d++)
+        {
+            float dir = 1;
+            if (d == 1)
+            {
+                dir = -1;
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                nScale.x += mod * 0.95f * dir;
+                nScale.z += mod * 0.95f * dir;
+                nScale.y += mod * -dir;
+                visualT.transform.rotation = gameManager.transform.rotation;
+                visualT.localScale = nScale;
+                yield return null;
+            }
         }
     }
 
@@ -180,19 +287,29 @@ public class PlayerController : MonoBehaviour
             fragmentTs[i].transform.localScale = startScales[i];
             fragments[i].broken = false;
         }
-        gameManager.health = gameManager.maxHealth;
-        gameManager.lives--;
+        gameManager.SpawnPlayer();
         health = gameManager.health;
+        landed = false;
     }
 
-    public void AddAttachment(int v = -1)
+    public void AddAttachment(string ttag)
     {
         int id = 0;
-        if (v == -1)
+        bool valid = false;
+        int tries = 0;
+        while (tries < 13 && !valid)
         {
             id = Random.Range(0, attachmentGOs.Length);
+            if (!attachmentGOs[id].activeSelf && attachmentGOs[id].CompareTag(ttag))
+            {
+                valid = true;
+            }
+            else
+            {
+                tries++;
+            }
         }
-        if (!attachmentGOs[id].activeSelf)
+        if (valid)
         {
             attachmentGOs[id].SetActive(true);
         }

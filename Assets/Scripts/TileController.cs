@@ -10,6 +10,9 @@ public class TileController : MonoBehaviour
     [SerializeField]
     Transform activeTilesParent, storedTilesParent;
 
+    [SerializeField]
+    GameObject[] firstTiles;
+
     GameManager gameManager;
 
     // Start is called before the first frame update
@@ -77,7 +80,17 @@ public class TileController : MonoBehaviour
         int tilesToPlace = Mathf.RoundToInt((Mathf.Abs(tileEndT.position.z) + Mathf.Abs(tileStartT.position.z)) / tileSize.z) + 1;
         for (int i = 0; i < tilesToPlace; i++)
         {
-            Transform tileT = storedTilesParent.GetChild(Random.Range(0, storedTilesParent.childCount));
+            int id;
+            Transform tileT = transform;
+            if (i < 3)
+            {
+                tileT = firstTiles[i].transform;
+            }
+            else
+            {
+                id = Random.Range(0, storedTilesParent.childCount);
+                tileT = storedTilesParent.GetChild(id);
+            }
             tileT.SetParent(activeTilesParent);
             tileT.position = tileEndT.position - new Vector3(0, 0, i * tileSize.z);
             tileT.gameObject.SetActive(true);

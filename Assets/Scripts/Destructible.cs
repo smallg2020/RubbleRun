@@ -42,7 +42,7 @@ public class Destructible : MonoBehaviour
         {
             g.SetActive(false);
         }
-        playerController.AddAttachment(-1);
+        playerController.AddAttachment(transform.tag);
         Destroy(this);
     }
 }

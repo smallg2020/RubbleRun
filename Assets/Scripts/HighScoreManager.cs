@@ -23,7 +23,7 @@ public class HighScoreManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        DownloadHighscores();
     }
 
     // Update is called once per frame
@@ -47,17 +47,18 @@ public class HighScoreManager : MonoBehaviour
         if (!submittingScore)
         {
             submittingScore = true;
+            //print("username = " + username);
             WWW www = new WWW(url + privateKey + "/add/" + WWW.EscapeURL(username) + "/" + score);
             yield return www;
             if (string.IsNullOrEmpty(www.error))
             {
                 //score uploaded successfully
-                print("added score " + username + " : " + score);
+                //print("added score " + username + " : " + score);
             }
             else
             {
                 //there was an error uploading the score;
-                print("upload error");
+                Debug.LogError("upload score error");
             }
             submittingScore = false;
         }
@@ -115,14 +116,14 @@ public class HighScoreManager : MonoBehaviour
 
             newHighScoreTexts.name = ("Score " + i.ToString());
 
-            print(highscoresList[i].username + ": " + highscoresList[i].score);
+            //print(highscoresList[i].username + ": " + highscoresList[i].score);
 
 
 
             //this line will change the ui text 
-            newHighScoreTexts.text = (highscoresList[i].username + ": " + highscoresList[i].score);
+            newHighScoreTexts.text = ((i + 1).ToString() + " : " + highscoresList[i].username + ": " + highscoresList[i].score);
         }
-        print("got highscores");
+        //print("got highscores");
     }
     public struct Highscore
     {
@@ -139,7 +140,7 @@ public class HighScoreManager : MonoBehaviour
 
     public void ClearHighScores()
     {
-        StartCoroutine(ClearingHighScores());        
+        StartCoroutine(ClearingHighScores());
     }
 
     IEnumerator ClearingHighScores()

@@ -9,17 +9,25 @@ public class ObstacleController : MonoBehaviour
     [SerializeField]
     Transform activeobstaclesParent;
     [SerializeField]
-    LayerMask groundLayers;
+    LayerMask groundLayers, blockedLayer;
     [SerializeField]
     GameObject[] obstaclePrefabs;
+    Obstacle[] obstacleScripts;
 
     GameManager gameManager;
+    PlayerController playerController;
     float newObstacleDelay = 0;
 
     // Start is called before the first frame update
     void Start()
     {
+        playerController = FindObjectOfType<PlayerController>();
         gameManager = FindObjectOfType<GameManager>();
+        obstacleScripts = new Obstacle[obstaclePrefabs.Length];
+        for (int i = 0; i < obstaclePrefabs.Length; i++)
+        {
+            obstacleScripts[i] = obstaclePrefabs[i].GetComponentInChildren<Obstacle>();
+        }
     }
 
     // Update is called once per frame
@@ -78,23 +86,46 @@ public class ObstacleController : MonoBehaviour
     bool AddNewObstacle()
     {
         bool isValid = false;
+        // access the script on the prefab to get settings
+        int id = Random.Range(0, obstaclePrefabs.Length);
         Vector3 pos = obstacleStartT.position;
+        Obstacle obScript = obstacleScripts[id];
+        float xpos = playerController.transform.position.x;
+        pos.x = xpos;
         Ray ray = new Ray(pos + Vector3.up * 100, Vector3.down);
-        if (Physics.Raycast(ray, out RaycastHit hit, 200, groundLayers))
+        if (Physics.SphereCast(ray, 3, 200, blockedLayer))
         {
-            if (hit.point.y > -0.4f && hit.point.y < 0.4f)
+            isValid = false;
+        }
+        else
+        {
+            if (Physics.Raycast(ray, out RaycastHit hit, 200, groundLayers, QueryTriggerInteraction.Collide))
             {
-                pos = hit.point;
-                isValid = true;
+                if (hit.point.y > -0.4f && hit.point.y < 0.4f)
+                {
+                    pos = hit.point;
+                    isValid = true;
+                }
             }
         }
         if (!isValid)
         {
             return false;
         }
-        int id = Random.Range(0, obstaclePrefabs.Length);
         GameObject obstacle = Instantiate(obstaclePrefabs[id], activeobstaclesParent);
+        pos.y += Random.Range(obScript.minPosY, obScript.maxPosY);
         obstacle.transform.position = pos;
         return true;
+    }
+
+    public void RemoveObstacles()
+    {
+        if (activeobstaclesParent.childCount > 0)
+        {
+            for (int i = 0; i < activeobstaclesParent.childCount; i++)
+            {
+                Destroy(activeobstaclesParent.GetChild(i).gameObject);
+            }
+        }
     }
 }

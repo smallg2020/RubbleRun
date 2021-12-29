@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Water : MonoBehaviour
 {
+    [SerializeField]
+    GameObject splashGO;
     GameManager gameManager;
     // Start is called before the first frame update
     void Start()
@@ -11,15 +13,13 @@ public class Water : MonoBehaviour
         gameManager = FindObjectOfType<GameManager>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.attachedRigidbody.CompareTag("Player"))
-            gameManager.health = 0;
+        {
+            gameManager.Die();
+            GameObject splash = Instantiate(splashGO, null);
+            splash.transform.position = other.transform.position;
+        }
     }
 }

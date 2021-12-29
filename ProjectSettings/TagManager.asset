@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Door
   - NPC
+  - Penguin
+  - Snowman
   layers:
   - Default
   - TransparentFX
@@ -18,7 +20,7 @@ TagManager:
   - PlayerFragments
   - Fragments
   - Collectible
-  - 
+  - Tunnel
   - 
   - 
   - 

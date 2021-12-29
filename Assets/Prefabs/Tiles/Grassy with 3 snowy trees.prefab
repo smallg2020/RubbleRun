@@ -104,6 +104,10 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1733391798360913134, guid: 343bc753bec26f1459109782ddb9bf9c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 1760562183740370340, guid: 343bc753bec26f1459109782ddb9bf9c, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -152,9 +156,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: Grassy with 3 snowy trees
       objectReference: {fileID: 0}
+    - target: {fileID: 3447365077055793638, guid: 343bc753bec26f1459109782ddb9bf9c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5709144490944542396, guid: 343bc753bec26f1459109782ddb9bf9c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7165004574802174399, guid: 343bc753bec26f1459109782ddb9bf9c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 8977869048991488555, guid: 343bc753bec26f1459109782ddb9bf9c, type: 3}
       propertyPath: m_RootOrder
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977869048991488555, guid: 343bc753bec26f1459109782ddb9bf9c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 343bc753bec26f1459109782ddb9bf9c, type: 3}

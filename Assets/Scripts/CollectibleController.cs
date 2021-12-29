@@ -3,19 +3,24 @@ using UnityEngine;
 public class CollectibleController : MonoBehaviour
 {
     [SerializeField]
-    Transform startT, endT, activeT, activeTilesT;
+    Transform startT, endT, activeT;
     [SerializeField]
     GameObject[] collectiblePrefabs;
-
     [SerializeField]
     LayerMask groundLayers;
 
+    Collectible[] collectibleScripts;
     GameManager gameManager;
     float newCollectibleDelay = 0;
 
     // Start is called before the first frame update
     void Start()
     {
+        collectibleScripts = new Collectible[collectiblePrefabs.Length];
+        for (int i = 0; i < collectiblePrefabs.Length; i++)
+        {
+            collectibleScripts[i] = collectiblePrefabs[i].GetComponent<Collectible>();
+        }
         gameManager = FindObjectOfType<GameManager>();
     }
 
@@ -74,7 +79,10 @@ public class CollectibleController : MonoBehaviour
     bool AddNewCollectible()
     {
         bool isValid = false;
-        Vector3 pos = startT.position + new Vector3(0, 0, 0);
+        int id = Random.Range(0, collectiblePrefabs.Length);
+        Collectible cScript = collectibleScripts[id];
+        float xpos = Random.Range(cScript.minPosX, cScript.maxPosX);
+        Vector3 pos = startT.position + new Vector3(xpos, 0, 0);
         Ray ray = new Ray(pos + Vector3.up * 100, Vector3.down);
         if (Physics.Raycast(ray, out RaycastHit hit, 200, groundLayers))
         {
@@ -88,9 +96,20 @@ public class CollectibleController : MonoBehaviour
         {
             return false;
         }
-        int id = Random.Range(0, collectiblePrefabs.Length);
         GameObject c = Instantiate(collectiblePrefabs[id], activeT);
+        pos.y += Random.Range(cScript.minPosY, cScript.maxPosY);
         c.transform.position = pos;
         return true;
+    }
+
+    public void RemoveCollectibles()
+    {
+        if (activeT.childCount > 0)
+        {
+            for (int i = 0; i < activeT.childCount; i++)
+            {
+                Destroy(activeT.GetChild(i).gameObject);
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ public class Obstacle : MonoBehaviour
 {
     [SerializeField]
     int damage = 1;
+    public float minPosX = 0, maxPosX = 0, minPosY = 0, maxPosY = 0;
     [SerializeField]
     Vector3 minScale = Vector3.one * 0.9f;
     [SerializeField]
@@ -15,12 +16,11 @@ public class Obstacle : MonoBehaviour
     [SerializeField]
     bool[] moveToPlayerPosition;
 
-
+    CameraShake cameraShake;
     GameManager gameManager;
     // Start is called before the first frame update
     void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
         transform.localScale = Vector3.Lerp(minScale, maxScale, Random.Range(0.0f, 1.0f));
     }
 
@@ -42,7 +42,13 @@ public class Obstacle : MonoBehaviour
 
     void HitPlayer(GameObject g)
     {
-        gameManager.health -= damage;
+        gameManager = FindObjectOfType<GameManager>();
+        if (!gameManager.invincible)
+        {
+            cameraShake = FindObjectOfType<CameraShake>();
+            cameraShake.ShakeCamera();
+            gameManager.HurtPlayer(damage);
+        }
         if (showWhenHit.Length > 0)
         {
             for (int i = 0; i < showWhenHit.Length; i++)
